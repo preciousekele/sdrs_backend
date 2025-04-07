@@ -38,7 +38,7 @@ router.get("/:id", verifyToken, async (req, res) => {
         }
 
         // Allow only admins, security, or the student involved to view
-        if (req.user.role !== "admin" && req.user.role !== "security" && req.user.id !== record.studentId) {
+        if (req.user.role !== "admin" && req.user.role !== "security" && req.user.id !== record.matricNumber) {
             return res.status(403).json({ message: "Access forbidden: Not authorized" });
         }
 
@@ -56,18 +56,18 @@ router.get("/:id", verifyToken, async (req, res) => {
  */
 router.post("/", verifyToken, restrictTo("admin"), async (req, res) => {
     try {
-        let { studentId, offense, punishment, actionTaken  } = req.body;
-       
-        //Validate studentId
-        studentId = parseInt(studentId, 10); // Convert to an integer
-        if (isNaN(studentId)) return res.status(400).json({ message: "Invalid student ID" })
+        let { studentName, matricNumber, offense, punishment, status } = req.body;
 
-        //efault value for actionTaken if missing
-        actionTaken = actionTaken ? actionTaken.trim() : "Pending review";
+        // Validate matricNumber
+        matricNumber = parseInt(matricNumber, 10); // Convert to an integer
+        if (isNaN(matricNumber)) return res.status(400).json({ message: "Invalid student ID" });
 
-        //create record in database
+        // Default value for status if missing
+        status = status ? status.trim() : "Active"; // Default to "Active" if no status is provided
+
+        // Create record in the database
         const newRecord = await prisma.record.create({
-            data: { studentId, offense, punishment, actionTaken},
+            data: { studentName, matricNumber, offense, punishment, status },
         });
 
         res.status(201).json({ message: "Disciplinary record created", record: newRecord });
@@ -85,17 +85,17 @@ router.post("/", verifyToken, restrictTo("admin"), async (req, res) => {
 router.put("/:id", verifyToken, restrictTo("admin"), async (req, res) => {
     try {
         const { id } = req.params;
-        const { offense, punishment, actionTaken  } = req.body;
+        const { studentName, matricNumber, offense, punishment, status } = req.body;
 
-         // Check if record exists
-         const existingRecord = await prisma.record.findUnique({ where: { id: parseInt(id) } });
-         if (!existingRecord) {
-             return res.status(404).json({ error: "Record not found" });
-         }
+        // Check if record exists
+        const existingRecord = await prisma.record.findUnique({ where: { id: parseInt(id) } });
+        if (!existingRecord) {
+            return res.status(404).json({ error: "Record not found" });
+        }
 
         const updatedRecord = await prisma.record.update({
             where: { id: parseInt(id) },
-            data: { offense, punishment, actionTaken },
+            data: { studentName, matricNumber, offense, punishment, status },
         });
 
         res.status(200).json({ message: "Record updated successfully", record: updatedRecord });
@@ -135,7 +135,7 @@ router.delete("/:id", verifyToken, restrictTo("admin"), async (req, res) => {
     }
 });
 
-//query postgres directly from prisma
+// Query Postgres directly from Prisma
 router.get("/test-db", async (req, res) => {
     try {
         const records = await prisma.record.findMany();
@@ -145,6 +145,5 @@ router.get("/test-db", async (req, res) => {
         res.status(500).json({ message: "Database error" });
     }
 });
-
 
 module.exports = router;

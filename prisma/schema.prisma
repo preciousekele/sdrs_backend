@@ -17,10 +17,11 @@ model User {
 }
 
 model Record {
-  id          Int      @id @default(autoincrement())
-  studentId   Int
-  offense     String
-  actionTaken String
-  punishment  String
-  createdAt   DateTime @default(now())
+  id            Int      @id @default(autoincrement())
+  studentName   String
+  matricNumber  Int
+  offense       String
+  punishment    String
+  status        String
+  createdAt     DateTime @default(now())
 }
