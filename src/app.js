@@ -1,26 +1,30 @@
 const express = require("express");
 const cors = require("cors");
-const helmet = require("helmet");
+const dotenv = require("dotenv");
+const { PrismaClient } = require("@prisma/client");
+const authRoutes = require("./routes/authRoutes");
+const recordRoutes = require('./routes/recordRoutes');
+
+dotenv.config();
 
 const app = express();
+const prisma = new PrismaClient();
 
-// Middleware
-app.use(cors());
-app.use(helmet());
+// === Middleware ===
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "http://localhost:3000",
+  credentials: true,
+}));
 app.use(express.json());
 
-// Import Routes
-const authRoutes = require("./routes/authRoutes");  // Ensure these routes exist
+// === Routes ===
 app.use("/api/auth", authRoutes);
-
-// Default route
+//record
+app.use('/api/records', recordRoutes)
+// === Default route ===
 app.get("/", (req, res) => {
-    res.status(200).json({ message: "Welcome to SDARS API" });
+  res.send("Welcome to the SDARS API 🎓");
 });
 
-// Handle 404
-app.use((req, res) => {
-    res.status(404).json({ message: "Route not found" });
-});
 
-module.exports = app; // ✅ Export only the app (NOT the server)
+module.exports = { app, prisma };

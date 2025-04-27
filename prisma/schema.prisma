@@ -8,20 +8,25 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      String   @default("user")
-  createdAt DateTime @default(now())
+  id                Int       @id @default(autoincrement())
+  name              String
+  email             String    @unique
+  password          String
+  role              String    @default("user")
+  emailConfirmed    Boolean   @default(false)
+  emailToken        String?
+  emailTokenExpiry  DateTime?
+  createdAt         DateTime  @default(now())
 }
 
 model Record {
-  id            Int      @id @default(autoincrement())
-  studentName   String
-  matricNumber  Int
-  offense       String
-  punishment    String
-  status        String
-  createdAt     DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  studentName  String
+  matricNumber BigInt
+  offense      String
+  punishment   String
+  status       String
+  date         DateTime @default(now())
+  createdAt    DateTime @default(now())
 }
+

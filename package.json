@@ -11,19 +11,29 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
-  "keywords": ["SDARS", "Express", "Prisma", "Node.js", "Backend"],
+  "keywords": [
+    "SDARS",
+    "Express",
+    "Prisma",
+    "Node.js",
+    "Backend"
+  ],
   "author": "Your Name",
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^6.5.0",
+    "axios": "^1.8.4",
     "bcryptjs": "^3.0.2",
+    "chalk": "^5.4.1",
     "compression": "^1.8.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.13.2",
     "morgan": "^1.10.0",
+    "nodemailer": "^6.10.0",
     "pg": "^8.14.1"
   },
   "devDependencies": {
@@ -34,6 +44,8 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "setupFilesAfterEnv": ["./jest.setup.js"]
+    "setupFilesAfterEnv": [
+      "./jest.setup.js"
+    ]
   }
 }
