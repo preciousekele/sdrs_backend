@@ -17,6 +17,8 @@ model User {
   emailToken        String?
   emailTokenExpiry  DateTime?
   createdAt         DateTime  @default(now())
+  lastSeenAt        DateTime?    
+  activities        UserActivity[] 
 }
 
 model Record {
@@ -30,3 +32,12 @@ model Record {
   createdAt    DateTime @default(now())
 }
 
+model UserActivity {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  action     String
+  timestamp  DateTime @default(now())
+  ipAddress  String?
+  userAgent  String?
+}

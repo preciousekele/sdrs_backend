@@ -31,3 +31,29 @@ export const createRecord = async (req, res) => {
     return res.status(500).json({ message: "Server error: Failed to create record" });
   }
 };
+
+export const deleteRecord = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if record exists
+    const existingRecord = await prisma.record.findUnique({
+      where: { id: parseInt(id) }
+    });
+
+    if (!existingRecord) {
+      return res.status(404).json({ message: "Record not found." });
+    }
+
+    // Delete the record
+    await prisma.record.delete({
+      where: { id: parseInt(id) }
+    });
+
+    return res.status(200).json({ message: "Record deleted successfully." });
+
+  } catch (err) {
+    console.error("Error deleting record:", err.message);
+    return res.status(500).json({ message: "Server error: Failed to delete record" });
+  }
+};

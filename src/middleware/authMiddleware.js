@@ -4,6 +4,9 @@ const prisma = new PrismaClient();
 
 // Enhanced token verification
 const verifyToken = async (req, res, next) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    console.log("Token received on server:", token);
+    
     try {
         // 1. Check Authorization Header
         const authHeader = req.headers.authorization || req.headers.Authorization;
