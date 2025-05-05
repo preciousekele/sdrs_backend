@@ -35,9 +35,12 @@ model Record {
 model UserActivity {
   id         Int      @id @default(autoincrement())
   userId     Int
-  user       User     @relation(fields: [userId], references: [id])
+  userName   String   
   action     String
   timestamp  DateTime @default(now())
   ipAddress  String?
   userAgent  String?
+
+  user       User     @relation(fields: [userId], references: [id])
 }
+

@@ -10,11 +10,12 @@ function activityLogger(actionDescriptionOrFn) {
           ? actionDescriptionOrFn(req)
           : actionDescriptionOrFn;
 
-      console.log(`[Logger] Logging action: ${action}`);
+      const user = req.user; 
 
-      await prisma.UserActivity.create({
+      await prisma.userActivity.create({
         data: {
-          userId: req.user.id, // Must be set by verifyToken
+          userId: user.id,
+          userName: user.name,        
           action,
           timestamp: new Date(),
           ipAddress: req.ip,
@@ -24,7 +25,6 @@ function activityLogger(actionDescriptionOrFn) {
     } catch (error) {
       console.error('Activity log error:', error.message);
     }
-
     next();
   };
 }
