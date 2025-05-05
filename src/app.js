@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 const { PrismaClient } = require("@prisma/client");
 const authRoutes = require("./routes/authRoutes");
 const recordRoutes = require('./routes/recordRoutes');
+const userRoutes = require("./routes/userRoutes");
 
 dotenv.config();
 
@@ -21,6 +22,8 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 //record
 app.use('/api/records', recordRoutes)
+
+app.use("/api/users", userRoutes);
 // === Default route ===
 app.get("/", (req, res) => {
   res.send("Welcome to the SDARS API 🎓");

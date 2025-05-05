@@ -12,6 +12,7 @@ const compression = require("compression"); // Compresses API responses for effi
 const authRoutes = require("./src/routes/authRoutes");
 const recordRoutes = require("./src/routes/recordRoutes");
 const protectedRoutes = require("./src/routes/protectedRoutes");
+const userRoutes = require("./src/routes/userRoutes");
 // Initialize the Express application
 const app = express();
 
@@ -31,7 +32,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/records", recordRoutes);
 app.use("/api/protected", protectedRoutes); //protected routes
-
+app.use("/api/users", userRoutes);
 // Define the port (use environment variable or default to 5000)
 const PORT = process.env.PORT || 5000;
 
