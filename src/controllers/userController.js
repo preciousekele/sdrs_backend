@@ -5,7 +5,7 @@ const getUserStats = async (req, res) => {
   try {
     const totalUsers = await prisma.user.count();
     const adminUsers = await prisma.user.count({ where: { role: 'admin' } });
-    const regularUsers = await prisma.user.count({ where: { role: 'user' } });
+    const normalUsers = await prisma.user.count({ where: { role: 'user' } });
     
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 
@@ -20,7 +20,7 @@ const getUserStats = async (req, res) => {
     res.status(200).json({
       totalUsers,
       adminUsers,
-      regularUsers,
+      normalUsers,
       activeUsers,
     });
   } catch (error) {
@@ -38,6 +38,7 @@ const getAllUsers = async (req, res) => {
         email: true,
         role: true,
         isActive: true,
+        createdAt: true,
         lastSeenAt: true, 
       },
     });
