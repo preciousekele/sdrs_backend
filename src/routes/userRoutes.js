@@ -1,6 +1,6 @@
 
 const express = require("express");
-const { getUserStats, updateLastSeen, getAllUsers, getUserActivities, updateUser, deleteUser } = require("../controllers/userController");
+const { getUserStats, updateLastSeen, getAllUsers, getUserActivities, updateUser, deleteUser, updateProfile, deleteUserProfile, changePassword, getProfile } = require("../controllers/userController");
 const { restrictTo, verifyToken,  } = require("../middleware/authMiddleware");
 const { PrismaClient } = require('@prisma/client');
 
@@ -47,8 +47,14 @@ router.get('/user/:userId/activity', async (req, res) => {
       res.status(500).json({ error: 'Failed to fetch user activities' });
     }
   });
+router.get('/profile/', verifyToken, getProfile);
 
-  
+router.put('/profile/update', verifyToken, updateProfile);
+
+router.delete('/profile/delete', verifyToken, deleteUserProfile);
+
+router.put('/profile/change-password', verifyToken, changePassword);
+
 router.post("/heartbeat", verifyToken, updateLastSeen);
 
 

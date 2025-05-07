@@ -4,9 +4,9 @@ const prisma = new PrismaClient();
 const getUserStats = async (req, res) => {
   try {
     const totalUsers = await prisma.user.count();
-    const adminUsers = await prisma.user.count({ where: { role: 'admin' } });
-    const normalUsers = await prisma.user.count({ where: { role: 'user' } });
-    
+    const adminUsers = await prisma.user.count({ where: { role: "admin" } });
+    const normalUsers = await prisma.user.count({ where: { role: "user" } });
+
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 
     const activeUsers = await prisma.user.count({
@@ -15,7 +15,7 @@ const getUserStats = async (req, res) => {
           gte: fiveMinutesAgo,
         },
       },
-    });    
+    });
 
     res.status(200).json({
       totalUsers,
@@ -39,7 +39,7 @@ const getAllUsers = async (req, res) => {
         role: true,
         isActive: true,
         createdAt: true,
-        lastSeenAt: true, 
+        lastSeenAt: true,
       },
     });
 
@@ -50,55 +50,54 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-
 const updateLastSeen = async (req, res) => {
-    const userId = req.user.id;
-  
-    try {
-      await prisma.user.update({
-        where: { id: userId },
-        data: { lastSeenAt: new Date() },
-      });
-  
-      res.status(200).json({ message: "Last seen updated" });
-    } catch (error) {
-      console.error("Error updating last seen:", error);
-      res.status(500).json({ message: "Failed to update last seen" });
+  const userId = req.user.id;
+
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { lastSeenAt: new Date() },
+    });
+
+    res.status(200).json({ message: "Last seen updated" });
+  } catch (error) {
+    console.error("Error updating last seen:", error);
+    res.status(500).json({ message: "Failed to update last seen" });
+  }
+};
+
+const getUserActivities = async (req, res) => {
+  const { id } = req.params;
+  const { from, to } = req.query;
+
+  if (!id || isNaN(parseInt(id))) {
+    return res.status(400).json({ message: "Invalid user ID" });
+  }
+
+  try {
+    const filters = {
+      userId: parseInt(id),
+    };
+
+    // Optional date filtering
+    if (from || to) {
+      filters.timestamp = {};
+      if (from) filters.timestamp.gte = new Date(from);
+      if (to) filters.timestamp.lte = new Date(to);
     }
-  };
-  
-  const getUserActivities = async (req, res) => {
-    const { id } = req.params;
-    const { from, to } = req.query;
-  
-    if (!id || isNaN(parseInt(id))) {
-      return res.status(400).json({ message: "Invalid user ID" });
-    }
-  
-    try {
-      const filters = {
-        userId: parseInt(id),
-      };
-  
-      // Optional date filtering
-      if (from || to) {
-        filters.timestamp = {};
-        if (from) filters.timestamp.gte = new Date(from);
-        if (to) filters.timestamp.lte = new Date(to);
-      }
-  
-      const activities = await prisma.userActivity.findMany({
-        where: filters,
-        orderBy: { timestamp: 'desc' },
-      });
-  
-      res.json(activities);
-    } catch (error) {
-      console.error("Error fetching user activities:", error);
-      res.status(500).json({ message: "Failed to fetch activity logs" });
-    }
-  };
-  /**
+
+    const activities = await prisma.userActivity.findMany({
+      where: filters,
+      orderBy: { timestamp: "desc" },
+    });
+
+    res.json(activities);
+  } catch (error) {
+    console.error("Error fetching user activities:", error);
+    res.status(500).json({ message: "Failed to fetch activity logs" });
+  }
+};
+/**
  * @desc    Update a user's information
  * @route   PUT /api/users/:id
  * @access  Admin
@@ -114,7 +113,7 @@ const updateUser = async (req, res) => {
         name,
         email,
         role,
-        isActive
+        isActive,
       },
       select: {
         id: true,
@@ -122,22 +121,19 @@ const updateUser = async (req, res) => {
         email: true,
         role: true,
         isActive: true,
-        lastSeenAt: true
-      }
+        lastSeenAt: true,
+      },
     });
 
     res.status(200).json({
       message: "User updated successfully",
-      user: updatedUser
+      user: updatedUser,
     });
-
   } catch (error) {
     console.error("Error updating user:", error);
     res.status(500).json({ error: "Failed to update user" });
   }
 };
-
-  
 
 /**
  * @desc    Delete a user
@@ -171,5 +167,112 @@ const deleteUser = async (req, res) => {
   }
 };
 
+//get user profiile
+const getProfile = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, email: true },
+    });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch profile" });
+  }
+};
 
-module.exports = { getUserStats, updateLastSeen, getAllUsers, getUserActivities, deleteUser, updateUser };
+//update Profile details
+const updateProfile = async (req, res) => {
+  const userId = req.user.id; 
+  const { name, email } = req.body;
+
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { name, email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    });
+
+    res.status(200).json({
+      message: "Profile updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+};
+
+//to delete user profile
+const deleteUserProfile = async (req, res) => {
+  const userId = req.user.id; 
+
+  try {
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    res.status(200).json({ message: 'Your account has been deleted successfully.' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ error: 'Failed to delete account' });
+  }
+};
+
+//to change user profile password
+const bcrypt = require('bcryptjs');
+
+const changePassword = async (req, res) => {
+  const userId = req.user.id;
+  const { currentPassword, newPassword, confirmNewPassword } = req.body;
+
+  // Validate required fields
+  if (!currentPassword || !newPassword || !confirmNewPassword) {
+    return res.status(400).json({ error: 'All fields are required.' });
+  }
+
+  // Check if new passwords match
+  if (newPassword !== confirmNewPassword) {
+    return res.status(400).json({ error: 'New password and confirm password do not match.' });
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Current password is incorrect.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+
+    res.status(200).json({ message: 'Password changed successfully.' });
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).json({ error: 'Failed to change password.' });
+  }
+};
+
+
+
+module.exports = {
+  getUserStats,
+  updateLastSeen,
+  getAllUsers,
+  getUserActivities,
+  deleteUser,
+  updateUser,
+  updateProfile,
+  deleteUserProfile,
+  changePassword,
+  getProfile
+};
