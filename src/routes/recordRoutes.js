@@ -15,7 +15,7 @@ const router = express.Router();
 router.get(
   "/",
   verifyToken,
-  restrictTo("admin", "security"),
+  restrictTo("admin", "user"),
   activityLogger("Viewed all disciplinary records"),
   async (req, res) => {
     try {
@@ -52,7 +52,7 @@ router.get(
 router.get(
   "/stats",
   verifyToken,
-  restrictTo("admin", "security"),
+  restrictTo("admin", "user"),
   async (req, res) => {
     try {
       const records = await prisma.record.findMany();
@@ -128,7 +128,7 @@ router.get(
 
       if (
         req.user.role !== "admin" &&
-        req.user.role !== "security" &&
+        req.user.role !== "user" &&
         req.user.id !== record.matricNumber.toString() // Convert BigInt to string for comparison
       ) {
         return res
