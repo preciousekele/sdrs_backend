@@ -1,7 +1,7 @@
 const express = require("express");
 const { verifyToken, restrictTo } = require("../middleware/authMiddleware");
 const { PrismaClient } = require("@prisma/client");
-const { createRecord } = require("../controllers/recordController");
+const { createRecord, deleteRecord, getDeletedRecords, restoreRecord } = require("../controllers/recordController");
 const activityLogger = require("../middleware/activityLogger");
 
 const prisma = new PrismaClient();
@@ -20,21 +20,21 @@ router.get(
   async (req, res) => {
     try {
       const records = await prisma.record.findMany({
+        where: {
+          isDeleted: false  // Only fetch records that haven't been deleted
+        },
         orderBy: { id: "asc" },
       });
 
-      if (!records.length) {
-        return res.status(404).json({ message: "No records found" });
-      }
-
-      // Convert BigInt to string before sending response
+      // Return empty array instead of 404 if no records
+      // This is better for frontend handling
       const serializedRecords = records.map((record) => ({
         ...record,
         matricNumber: record.matricNumber.toString(),
       }));
 
       res.status(200).json({
-        message: "Records retrieved successfully",
+        message: records.length ? "Records retrieved successfully" : "No records found",
         records: serializedRecords,
       });
     } catch (error) {
@@ -55,7 +55,12 @@ router.get(
   restrictTo("admin", "user"),
   async (req, res) => {
     try {
-      const records = await prisma.record.findMany();
+      // Only fetch non-deleted records for stats calculation
+      const records = await prisma.record.findMany({
+        where: {
+          isDeleted: false  // Only include active (non-deleted) records
+        }
+      });
 
       // Convert BigInt to string for each record
       const serializedRecords = records.map((record) => ({
@@ -211,35 +216,11 @@ router.delete(
   verifyToken,
   restrictTo("admin"),
   activityLogger((req) => `Deleted record ID ${req.params.id}`),
-  async (req, res) => {
-    console.log("DELETE request received for record with ID:", req.params.id);
-    try {
-      const { id } = req.params;
-      console.log("Attempting to delete record with id:", id);
+  deleteRecord);
 
-      // Check if the record exists
-      const existingRecord = await prisma.record.findUnique({
-        where: { id: parseInt(id) },
-      });
+router.get('/deleted/all', getDeletedRecords);
 
-      if (!existingRecord) {
-        console.log("Record not found, id:", id); // Log if record not found
-        return res.status(404).json({ message: "Record not found" });
-      }
-
-      // Delete the record
-      await prisma.record.delete({
-        where: { id: parseInt(id) },
-      });
-      console.log("Record deleted successfully, id:", id);
-
-      res.status(200).json({ message: "Record deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting record:", error);
-      res.status(500).json({ message: "Server error" });
-    }
-  }
-);
+router.patch('/restore/:id', restoreRecord);
 
 // Query Postgres directly from Prisma
 router.get("/test-db", async (req, res) => {
