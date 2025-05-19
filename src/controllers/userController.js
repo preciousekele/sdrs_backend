@@ -52,19 +52,39 @@ const getAllUsers = async (req, res) => {
 
 const updateLastSeen = async (req, res) => {
   const userId = req.user.id;
+  console.log("Last seen triggered by:", req.user); // DEBUG
 
   try {
-    await prisma.user.update({
+    // Step 1: Update the lastSeenAt timestamp to the current time
+    const user = await prisma.user.update({
       where: { id: userId },
       data: { lastSeenAt: new Date() },
+      select: { lastSeenAt: true, isActive: true }, // Retrieve lastSeenAt and isActive fields
     });
 
-    res.status(200).json({ message: "Last seen updated" });
+    // Step 2: Check if the user has been active within the last 5 minutes
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    console.log("Five minutes ago:", fiveMinutesAgo);
+    console.log("User lastSeenAt:", user.lastSeenAt);
+
+    const isActive = new Date(user.lastSeenAt) > fiveMinutesAgo;
+    console.log("Is user active?", isActive);
+
+    // Step 3: Update the isActive field if necessary
+    if (user.isActive !== isActive) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { isActive: isActive },
+      });
+    }
+
+    res.status(200).json({ message: "Last seen and activity status updated" });
   } catch (error) {
     console.error("Error updating last seen:", error);
-    res.status(500).json({ message: "Failed to update last seen" });
+    res.status(500).json({ message: "Failed to update last seen and activity status" });
   }
 };
+
 
 const getUserActivities = async (req, res) => {
   const { id } = req.params;

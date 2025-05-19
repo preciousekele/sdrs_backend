@@ -4,8 +4,7 @@ const prisma = new PrismaClient();
 
 export const createRecord = async (req, res) => {
   try {
-    const { studentName, matricNumber, offense, punishment, date, status } =
-      req.body;
+    const { studentName, matricNumber, offense, punishment, date, status, department } = req.body;
 
     if (
       !studentName ||
@@ -13,6 +12,7 @@ export const createRecord = async (req, res) => {
       !offense ||
       !punishment ||
       !date ||
+      !department ||
       !status
     ) {
       return res.status(400).json({ message: "All fields are required." });
@@ -25,23 +25,20 @@ export const createRecord = async (req, res) => {
         offense,
         punishment,
         status,
+        department,
         createdAt: new Date(date),
       },
     });
 
-    // Convert BigInt to string before sending in the response
     newRecord.matricNumber = newRecord.matricNumber.toString();
 
-    return res
-      .status(201)
-      .json({ message: "Record created", record: newRecord });
+    return res.status(201).json({ message: "Record created", record: newRecord });
   } catch (err) {
     console.error("Error creating record:", err.message);
-    return res
-      .status(500)
-      .json({ message: "Server error: Failed to create record" });
+    return res.status(500).json({ message: "Server error: Failed to create record" });
   }
 };
+
 
 export const deleteRecord = async (req, res) => {
   try {

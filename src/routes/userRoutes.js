@@ -36,7 +36,7 @@ router.get('/user/:userId/activity', async (req, res) => {
           userAgent: true,
         },
         orderBy: {
-          timestamp: 'desc',  // Optional: order by most recent activity
+          timestamp: 'desc', 
         },
       });
   

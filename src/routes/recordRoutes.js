@@ -66,6 +66,7 @@ router.get(
       const serializedRecords = records.map((record) => ({
         ...record,
         matricNumber: record.matricNumber.toString(),
+        createdAt: record.createdAt, // Ensure createdAt is included
       }));
 
       const stats = {
@@ -76,27 +77,67 @@ router.get(
         resolutionRate: 0,
       };
 
+      // Group records by month
+      const recordsByMonth = {};
+      
       for (const record of serializedRecords) {
         const offense = record.offense.toLowerCase().trim();
         const status = record.status.toLowerCase().trim();
-
+        const month = new Date(record.createdAt).toISOString().substring(0, 7); // Format: YYYY-MM
+        
+        // Initialize month data if not exists
+        if (!recordsByMonth[month]) {
+          recordsByMonth[month] = {
+            total: 0,
+            resolved: 0
+          };
+        }
+        
         // Count offenses
         stats.offenses[offense] = (stats.offenses[offense] || 0) + 1;
-
+        
         // Count statuses
         if (status === "pending") stats.pendingCount++;
         if (status === "resolved") stats.resolvedCount++;
+        
+        // Add to monthly stats
+        recordsByMonth[month].total++;
+        if (status === "resolved") {
+          recordsByMonth[month].resolved++;
+        }
+      }
+      
+      // Calculate resolution rate based on: (current month - previous month) / current month * 100
+      const months = Object.keys(recordsByMonth).sort();
+      if (months.length >= 2) {
+        const currentMonth = months[months.length - 1];
+        const previousMonth = months[months.length - 2];
+        
+        const currentMonthTotal = recordsByMonth[currentMonth].total;  // 9 cases for example
+        const previousMonthTotal = recordsByMonth[previousMonth].total;  // 3 cases for example
+        
+        if (currentMonthTotal > 0) {
+          // Example: ((9-3)/9)*100 = 66.7%
+          stats.resolutionRate = (((currentMonthTotal - previousMonthTotal) / currentMonthTotal) * 100).toFixed(1);
+        } else {
+          // If current month has 0 cases
+          stats.resolutionRate = "0.0";
+        }
+      } else {
+        // Not enough data for month-over-month comparison
+        stats.resolutionRate = "0.0";
       }
 
-      // Calculate resolution rate
-      if (stats.totalRecords > 0) {
-        stats.resolutionRate = (
-          (stats.resolvedCount / stats.totalRecords) *
-          100
-        ).toFixed(1); // in percentage
-      }
-
-      res.status(200).json({ message: "Dashboard stats retrieved", stats });
+      res.status(200).json({ 
+        message: "Dashboard stats retrieved", 
+        stats,
+        // Include monthly breakdown for reference
+        monthlyData: Object.entries(recordsByMonth).map(([month, data]) => ({
+          month,
+          totalCases: data.total,
+          resolvedCases: data.resolved
+        }))
+      });
     } catch (error) {
       console.error("Error fetching dashboard stats:", error);
       res.status(500).json({ message: "Server error" });
@@ -174,7 +215,7 @@ router.put(
   async (req, res) => {
     try {
       const { id } = req.params;
-      const { studentName, matricNumber, offense, punishment, status } =
+      const { studentName, matricNumber, offense, department, punishment, status } =
         req.body;
 
       // Check if record exists
@@ -187,7 +228,7 @@ router.put(
 
       const updatedRecord = await prisma.record.update({
         where: { id: parseInt(id) },
-        data: { studentName, matricNumber, offense, punishment, status },
+        data: { studentName, matricNumber, offense, department, punishment, status },
       });
 
       const serializedRecord = {

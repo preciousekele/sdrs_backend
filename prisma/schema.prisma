@@ -26,6 +26,7 @@ model Record {
   id           Int      @id @default(autoincrement())
   studentName  String
   matricNumber BigInt
+  department   String   @default("nil")
   offense      String
   punishment   String
   status       String
