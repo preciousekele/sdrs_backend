@@ -22,10 +22,12 @@ model User {
   activities        UserActivity[] 
 }
 
+
 model Record {
   id           Int      @id @default(autoincrement())
   studentName  String
   matricNumber BigInt
+  level        String   @default("100")
   department   String   @default("nil")
   offense      String
   punishment   String

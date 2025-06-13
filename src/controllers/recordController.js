@@ -4,11 +4,12 @@ const prisma = new PrismaClient();
 
 export const createRecord = async (req, res) => {
   try {
-    const { studentName, matricNumber, offense, punishment, date, status, department } = req.body;
+    const { studentName, matricNumber, level, offense, punishment, date, status, department } = req.body;
 
     if (
       !studentName ||
       !matricNumber ||
+      !level ||
       !offense ||
       !punishment ||
       !date ||
@@ -22,6 +23,7 @@ export const createRecord = async (req, res) => {
       data: {
         studentName,
         matricNumber: BigInt(matricNumber), // Use BigInt for storage
+        level,
         offense,
         punishment,
         status,

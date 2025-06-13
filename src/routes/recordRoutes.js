@@ -215,7 +215,7 @@ router.put(
   async (req, res) => {
     try {
       const { id } = req.params;
-      const { studentName, matricNumber, offense, department, punishment, status } =
+      const { studentName, matricNumber, level, offense, department, punishment, status } =
         req.body;
 
       // Check if record exists
@@ -228,7 +228,7 @@ router.put(
 
       const updatedRecord = await prisma.record.update({
         where: { id: parseInt(id) },
-        data: { studentName, matricNumber, offense, department, punishment, status },
+        data: { studentName, matricNumber, level, offense, department, punishment, status },
       });
 
       const serializedRecord = {
