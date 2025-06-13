@@ -79,35 +79,35 @@ exports.register = async (req, res) => {
 
     // Create new user
     const newUser = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        role,
-        emailToken,
-        emailTokenExpiry,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-      },
-    });
+    data: {
+    name,
+    email,
+    password: hashedPassword,
+    role,
+    emailToken,
+    emailTokenExpiry,
+    },
+    select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    createdAt: true,
+    },
+  });
 
-    // Generate the confirmation URL
-    const confirmUrl = `http://localhost:3000/confirm-email?token=${emailToken}`;
+// Generate the confirmation URL
+const confirmUrl = `https://mcu-sdars.vercel.app/#/confirm-email?token=${emailToken}`;
 
-    // Send confirmation email asynchronously
-    sendConfirmationEmail(email, name, confirmUrl);
+// Send confirmation email asynchronously
+sendConfirmationEmail(email, name, confirmUrl);
 
-    // Return response to the client
-    res.status(201).json({
-      success: true,
-      message: "Registration successful. Check your email to confirm your account.",
-      user: newUser,
-    });
+// Return response to the client
+res.status(201).json({
+  success: true,
+  message: "Registration successful. Check your email to confirm your account.",
+  user: newUser,
+});
 
   } catch (error) {
     console.error("Registration Error:", error);
