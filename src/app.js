@@ -13,9 +13,15 @@ const prisma = new PrismaClient();
 
 // === Middleware ===
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:3000",
+  origin: [
+    "https://mcu-sdars.vercel.app",
+    "https://mcu-sdars-admin.vercel.app",
+    "https://mcu-sdars-user.vercel.app"
+  ],
   credentials: true,
+  methods: ["GET", "POST", "OPTIONS"]
 }));
+
 app.use(express.json());
 
 // === Routes ===
