@@ -11,29 +11,41 @@ dotenv.config();
 const app = express();
 const prisma = new PrismaClient();
 
-// === Middleware ===
-app.use(cors({
+// === Enhanced CORS Configuration ===
+const corsOptions = {
   origin: [
     "https://mcu-sdars.vercel.app",
-    "https://mcu-sdars-admin.vercel.app",
+    "https://mcu-sdars-admin.vercel.app", 
     "https://mcu-sdars-user.vercel.app"
   ],
   credentials: true,
-  methods: ["GET", "POST", "OPTIONS"]
-}));
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization", 
+    "X-Requested-With",
+    "Accept",
+    "Origin"
+  ],
+  exposedHeaders: ["Set-Cookie"],
+  optionsSuccessStatus: 200 // For legacy browser support
+};
+
+app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
 
 // === Routes ===
 app.use("/api/auth", authRoutes);
-//record
-app.use('/api/records', recordRoutes)
-
+app.use('/api/records', recordRoutes);
 app.use("/api/users", userRoutes);
+
 // === Default route ===
 app.get("/", (req, res) => {
   res.send("Welcome to the SDARS API 🎓");
 });
-
 
 module.exports = { app, prisma };
