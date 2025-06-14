@@ -13,28 +13,49 @@ const prisma = new PrismaClient();
 
 // === Enhanced CORS Configuration ===
 const corsOptions = {
-  origin: [
-    "https://mcu-sdars.vercel.app",
-    "https://mcu-sdars-admin.vercel.app", 
-    "https://mcu-sdars-user.vercel.app"
-  ],
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      "https://mcu-sdars.vercel.app",
+      "https://mcu-sdars-admin.vercel.app", 
+      "https://mcu-sdars-user.vercel.app"
+    ];
+    
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'), false);
+    }
+  },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
   allowedHeaders: [
     "Content-Type",
     "Authorization", 
     "X-Requested-With",
     "Accept",
-    "Origin"
+    "Origin",
+    "Cache-Control",
+    "Pragma"
   ],
   exposedHeaders: ["Set-Cookie"],
-  optionsSuccessStatus: 200 // For legacy browser support
+  optionsSuccessStatus: 200, // For legacy browser support
+  preflightContinue: false
 };
 
+// Apply CORS before other middleware
 app.use(cors(corsOptions));
 
-// Handle preflight requests explicitly
-app.options('*', cors(corsOptions));
+// Handle preflight requests explicitly for all routes
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin);
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With,Accept,Origin,Cache-Control,Pragma');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.sendStatus(200);
+});
 
 app.use(express.json());
 
