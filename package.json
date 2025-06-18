@@ -21,7 +21,7 @@
   "author": "Your Name",
   "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^6.5.0",
+    "@prisma/client": "^6.10.1",
     "axios": "^1.8.4",
     "bcryptjs": "^3.0.2",
     "chalk": "^5.4.1",
@@ -39,7 +39,7 @@
   "devDependencies": {
     "jest": "^29.7.0",
     "nodemon": "^3.1.9",
-    "prisma": "^6.5.0",
+    "prisma": "^6.10.1",
     "supertest": "^7.1.0"
   },
   "jest": {

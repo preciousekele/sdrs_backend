@@ -37,6 +37,9 @@ model Record {
   updatedAt    DateTime @default(now())
   isDeleted    Boolean  @default(false)
   deletedAt    DateTime? 
+  offenseCount       Int      @default(0)
+  punishmentDuration String?  
+  resumptionPeriod   String?
 }
 
 model UserActivity {

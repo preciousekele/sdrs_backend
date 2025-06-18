@@ -4,8 +4,20 @@ const prisma = new PrismaClient();
 
 export const createRecord = async (req, res) => {
   try {
-    const { studentName, matricNumber, level, offense, punishment, date, status, department } = req.body;
+    const {
+      studentName,
+      matricNumber,
+      level,
+      offense,
+      punishment,
+      date,
+      status,
+      department,
+      duration, // e.g. "2 months" or "First Semester"
+      resumeTime, // e.g. "Second Semester"
+    } = req.body;
 
+    // Validate required fields
     if (
       !studentName ||
       !matricNumber ||
@@ -19,28 +31,52 @@ export const createRecord = async (req, res) => {
       return res.status(400).json({ message: "All fields are required." });
     }
 
+    // Count previous records for same matricNumber (non-deleted)
+    const existingOffenses = await prisma.record.count({
+      where: {
+        matricNumber: BigInt(matricNumber),
+        isDeleted: false,
+      },
+    });
+
+    // Create new record
     const newRecord = await prisma.record.create({
       data: {
         studentName,
-        matricNumber: BigInt(matricNumber), // Use BigInt for storage
+        matricNumber: BigInt(matricNumber),
         level,
         offense,
         punishment,
         status,
         department,
         createdAt: new Date(date),
+        offenseCount: existingOffenses,
+        punishmentDuration:
+          duration && duration.trim().toLowerCase() !== "nil"
+            ? `Effective from ${duration}`
+            : "Nil",
+
+        resumptionPeriod:
+          resumeTime && resumeTime.trim().toLowerCase() !== "nil"
+            ? `Effective from ${resumeTime}`
+            : "Nil",
       },
     });
 
+    // Convert BigInt for response
     newRecord.matricNumber = newRecord.matricNumber.toString();
 
-    return res.status(201).json({ message: "Record created", record: newRecord });
+    return res.status(201).json({
+      message: "Record created",
+      record: newRecord,
+    });
   } catch (err) {
     console.error("Error creating record:", err.message);
-    return res.status(500).json({ message: "Server error: Failed to create record" });
+    return res
+      .status(500)
+      .json({ message: "Server error: Failed to create record" });
   }
 };
-
 
 export const deleteRecord = async (req, res) => {
   try {
