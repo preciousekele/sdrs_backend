@@ -3,6 +3,8 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export const createRecord = async (req, res) => {
+  const normalizedMatricNumber = BigInt(matricNumber);
+
   try {
     const {
       studentName,
@@ -34,7 +36,7 @@ export const createRecord = async (req, res) => {
     // Count previous records for same matricNumber (non-deleted)
     const existingOffenses = await prisma.record.count({
       where: {
-        matricNumber: BigInt(matricNumber),
+        matricNumber: normalizedMatricNumber,
         isDeleted: false,
       },
     });
@@ -43,7 +45,7 @@ export const createRecord = async (req, res) => {
     const newRecord = await prisma.record.create({
       data: {
         studentName,
-        matricNumber: BigInt(matricNumber),
+        matricNumber: normalizedMatricNumber,
         level,
         offense,
         punishment,
