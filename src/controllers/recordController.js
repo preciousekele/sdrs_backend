@@ -3,7 +3,6 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export const createRecord = async (req, res) => {
-  const normalizedMatricNumber = BigInt(matricNumber);
 
   try {
     const {
@@ -33,6 +32,7 @@ export const createRecord = async (req, res) => {
       return res.status(400).json({ message: "All fields are required." });
     }
 
+    const normalizedMatricNumber = BigInt(matricNumber);
     // Count previous records for same matricNumber (non-deleted)
     const existingOffenses = await prisma.record.count({
       where: {
