@@ -13,8 +13,8 @@ export const createRecord = async (req, res) => {
       date,
       status,
       department,
-      duration, // e.g. "2 months" or "First Semester"
-      resumeTime, // e.g. "Second Semester"
+      punishmentDuration,
+      resumptionPeriod,
     } = req.body;
 
     // Validate required fields
