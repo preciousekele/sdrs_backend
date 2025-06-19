@@ -54,8 +54,8 @@ export const createRecord = async (req, res) => {
         punishment,
         status,
         department,
-        createdAt: new Date(date),
-        offenseCount: newOffenseCount,
+        date: new Date(date), // Use 'date' field instead of 'createdAt'
+        offenseCount: newOffenseCount, // This should be the new count, not existing
         punishmentDuration:
           punishmentDuration && 
           punishmentDuration.trim() !== "" && 
@@ -102,6 +102,7 @@ export const deleteRecord = async (req, res) => {
       return res.status(400).json({ message: "Record is already deleted." });
     }
 
+    // Soft delete the record
     const updatedRecord = await prisma.record.update({
       where: { id: parseInt(id) },
       data: {
@@ -109,6 +110,9 @@ export const deleteRecord = async (req, res) => {
         deletedAt: new Date(),
       },
     });
+
+    // After soft deletion, update offense counts for remaining records of the same student
+    await updateOffenseCountsForStudent(updatedRecord.matricNumber);
 
     updatedRecord.matricNumber = updatedRecord.matricNumber.toString();
 
@@ -134,6 +138,7 @@ export const getDeletedRecords = async (req, res) => {
     const formatted = deletedRecords.map((record) => ({
       ...record,
       matricNumber: record.matricNumber.toString(),
+      date: record.date?.toISOString().split('T')[0], // Format date for display
     }));
 
     return res.status(200).json({ deletedRecords: formatted });
@@ -179,6 +184,9 @@ export const restoreRecord = async (req, res) => {
       },
     });
 
+    // After restoration, update offense counts for all records of the same student
+    await updateOffenseCountsForStudent(restoredRecord.matricNumber);
+
     // Convert BigInt for response
     restoredRecord.matricNumber = restoredRecord.matricNumber.toString();
 
@@ -191,5 +199,53 @@ export const restoreRecord = async (req, res) => {
     return res.status(500).json({
       message: "Server error: Failed to restore record",
     });
+  }
+};
+
+// Helper function to update offense counts for a student
+const updateOffenseCountsForStudent = async (matricNumber) => {
+  try {
+    // Get all non-deleted records for this student, ordered by date
+    const studentRecords = await prisma.record.findMany({
+      where: {
+        matricNumber: matricNumber,
+        isDeleted: false,
+      },
+      orderBy: { date: 'asc' }, // Order by date to maintain chronological offense count
+    });
+
+    // Update each record with the correct offense count
+    for (let i = 0; i < studentRecords.length; i++) {
+      await prisma.record.update({
+        where: { id: studentRecords[i].id },
+        data: { offenseCount: i + 1 }, // 1-based counting
+      });
+    }
+  } catch (error) {
+    console.error("Error updating offense counts:", error);
+  }
+};
+
+// Add function to get all records (for display)
+export const getAllRecords = async (req, res) => {
+  try {
+    const records = await prisma.record.findMany({
+      where: { isDeleted: false },
+      orderBy: { date: 'desc' },
+    });
+
+    // Convert BigInt to string and format dates
+    const formatted = records.map((record) => ({
+      ...record,
+      matricNumber: record.matricNumber.toString(),
+      date: record.date?.toISOString().split('T')[0], // Format date for display
+    }));
+
+    return res.status(200).json({ records: formatted });
+  } catch (err) {
+    console.error("Error fetching records:", err.message);
+    return res
+      .status(500)
+      .json({ message: "Server error: Failed to fetch records" });
   }
 };
