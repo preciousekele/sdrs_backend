@@ -52,13 +52,14 @@ export const createRecord = async (req, res) => {
         createdAt: new Date(date),
         offenseCount: existingOffenses,
         punishmentDuration:
-          duration && duration.trim().toLowerCase() !== "nil"
-            ? `Effective from ${duration}`
+          punishmentDuration &&
+          punishmentDuration.trim().toLowerCase() !== "nil"
+            ? `Effective from ${punishmentDuration}`
             : "Nil",
 
         resumptionPeriod:
-          resumeTime && resumeTime.trim().toLowerCase() !== "nil"
-            ? `Effective from ${resumeTime}`
+          resumptionPeriod && resumptionPeriod.trim().toLowerCase() !== "nil"
+            ? `Effective from ${resumptionPeriod}`
             : "Nil",
       },
     });
