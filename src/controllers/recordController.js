@@ -3,7 +3,6 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export const createRecord = async (req, res) => {
-
   try {
     const {
       studentName,
@@ -33,6 +32,7 @@ export const createRecord = async (req, res) => {
     }
 
     const normalizedMatricNumber = BigInt(matricNumber);
+    
     // Count previous records for same matricNumber (non-deleted)
     const existingOffenses = await prisma.record.count({
       where: {
@@ -40,6 +40,9 @@ export const createRecord = async (req, res) => {
         isDeleted: false,
       },
     });
+
+    // The new record will be the (existingOffenses + 1)th offense for this student
+    const newOffenseCount = existingOffenses + 1;
 
     // Create new record
     const newRecord = await prisma.record.create({
@@ -52,16 +55,18 @@ export const createRecord = async (req, res) => {
         status,
         department,
         createdAt: new Date(date),
-        offenseCount: existingOffenses,
+        offenseCount: newOffenseCount,
         punishmentDuration:
-          punishmentDuration &&
+          punishmentDuration && 
+          punishmentDuration.trim() !== "" && 
           punishmentDuration.trim().toLowerCase() !== "nil"
-            ? `Effective from ${punishmentDuration}`
+            ? punishmentDuration.trim()
             : "Nil",
-
         resumptionPeriod:
-          resumptionPeriod && resumptionPeriod.trim().toLowerCase() !== "nil"
-            ? `Effective from ${resumptionPeriod}`
+          resumptionPeriod && 
+          resumptionPeriod.trim() !== "" && 
+          resumptionPeriod.trim().toLowerCase() !== "nil"
+            ? resumptionPeriod.trim()
             : "Nil",
       },
     });
