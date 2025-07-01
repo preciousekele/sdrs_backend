@@ -97,7 +97,7 @@ exports.register = async (req, res) => {
     });
 
     // Generate the confirmation URL
-    const confirmUrl = `http://localhost:3000/confirm-email?token=${emailToken}`;
+    const confirmUrl = `https://sdars-backend.onrender.com/confirm-email?token=${emailToken}`;
 
     // Send confirmation email asynchronously
     sendConfirmationEmail(email, name, confirmUrl);
