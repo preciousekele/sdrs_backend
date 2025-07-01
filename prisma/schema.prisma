@@ -22,7 +22,6 @@ model User {
   activities        UserActivity[] 
 }
 
-
 model Record {
   id           Int      @id @default(autoincrement())
   studentName  String
@@ -51,6 +50,4 @@ model UserActivity {
   ipAddress  String?
   userAgent  String?
 
-  user       User     @relation(fields: [userId], references: [id])
-}
-
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
