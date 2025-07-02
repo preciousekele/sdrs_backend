@@ -99,7 +99,8 @@ exports.register = async (req, res) => {
     // Generate the confirmation URL
     const confirmUrl = `https://mcu-sdars.vercel.app/confirm-email?token=${emailToken}`;
 
-
+    // Log the confirmation URL for debugging
+    
     // Send confirmation email asynchronously
     sendConfirmationEmail(email, name, confirmUrl);
 
