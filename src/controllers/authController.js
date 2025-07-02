@@ -97,7 +97,8 @@ exports.register = async (req, res) => {
     });
 
     // Generate the confirmation URL
-    const confirmUrl = `https://sdars-backend.onrender.com/confirm-email?token=${emailToken}`;
+    const confirmUrl = `https://sdars-frontend.onrender.com/confirm-email?token=${emailToken}`;
+
 
     // Send confirmation email asynchronously
     sendConfirmationEmail(email, name, confirmUrl);
@@ -117,91 +118,6 @@ exports.register = async (req, res) => {
     }
     // Handle any other errors
     res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-exports.confirmEmailGet = async (req, res) => {
-  console.log("Email confirmation request received via GET");
-  const { token } = req.query; // Get token from URL parameters
-
-  try {
-    // Check if the token exists and is valid
-    const user = await prisma.user.findFirst({
-      where: {
-        emailToken: token,
-        emailTokenExpiry: {
-          gte: new Date(),
-        },
-      },
-    });
-
-    // Token is invalid or expired
-    if (!user) {
-      const maybeUser = await prisma.user.findFirst({ where: { emailToken: token } });
-      if (maybeUser && maybeUser.emailConfirmed) {
-        return res.status(200).send(`
-          <html>
-            <body style="font-family: Arial, sans-serif; text-align: center; margin-top: 50px;">
-              <h2 style="color: green;">Email Already Confirmed!</h2>
-              <p>Your email has already been confirmed. You can now log in.</p>
-              <a href="https://mcu-sdars.vercel.app/#/login" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Go to Login</a>
-            </body>
-          </html>
-        `);
-      }
-      return res.status(400).send(`
-        <html>
-          <body style="font-family: Arial, sans-serif; text-align: center; margin-top: 50px;">
-            <h2 style="color: red;">Invalid or Expired Token</h2>
-            <p>The confirmation link is invalid or has expired.</p>
-            <a href="https://mcu-sdars.vercel.app/#/register" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Register Again</a>
-          </body>
-        </html>
-      `);
-    }
-
-    // Update the user record to confirm the email
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        emailConfirmed: true,
-        emailToken: null,
-        emailTokenExpiry: null,
-      },
-    });
-
-    // Generate JWT token for authenticated user
-    const jwtPayload = { id: user.id, email: user.email };
-    const accessToken = jwt.sign(jwtPayload, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-    // Send success page with option to redirect
-    res.status(200).send(`
-      <html>
-        <body style="font-family: Arial, sans-serif; text-align: center; margin-top: 50px;">
-          <h2 style="color: green;">Email Confirmed Successfully!</h2>
-          <p>Your email has been confirmed. You can now log in to your account.</p>
-          <a href="https://mcu-sdars.vercel.app/#/login" style="background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Go to Login</a>
-          <script>
-            // Auto-redirect after 3 seconds
-            setTimeout(() => {
-              window.location.href = 'https://mcu-sdars.vercel.app/#/login?confirmed=true';
-            }, 3000);
-          </script>
-        </body>
-      </html>
-    `);
-
-  } catch (err) {
-    console.error("Email confirmation error:", err);
-    res.status(500).send(`
-      <html>
-        <body style="font-family: Arial, sans-serif; text-align: center; margin-top: 50px;">
-          <h2 style="color: red;">Confirmation Failed</h2>
-          <p>Email confirmation failed. Please try again.</p>
-          <a href="https://mcu-sdars.vercel.app/#?register" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Register Again</a>
-        </body>
-      </html>
-    `);
   }
 };
 
@@ -255,8 +171,6 @@ exports.confirmEmail = async (req, res) => {
     res.status(500).json({ error: "Email confirmation failed" });
   }
 };
-
-
 
 // Login User
 exports.login = async (req, res) => {
