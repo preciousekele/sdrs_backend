@@ -25,6 +25,6 @@ describe("Authentication Tests", () => {
         password: "password123",
     });
 
-    console.log("Login Response:", res.body); // ✅ Log response for debugging
+    console.log("Login Response:", res.body); // Log response for debugging
   });
 });

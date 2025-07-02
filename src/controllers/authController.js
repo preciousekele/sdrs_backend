@@ -97,7 +97,7 @@ exports.register = async (req, res) => {
     });
 
     // Generate the confirmation URL
-    const confirmUrl = `https://sdars-backend.onrender.com/confirm-email?token=${emailToken}`;
+    const confirmUrl = `https://mcu-sdars.vercel.app/confirm-email?token=${emailToken}`;
 
     // Send confirmation email asynchronously
     sendConfirmationEmail(email, name, confirmUrl);
@@ -213,3 +213,4 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
