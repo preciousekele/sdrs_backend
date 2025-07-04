@@ -40,7 +40,6 @@ router.get('/user/:userId/activity', async (req, res) => {
         },
       });
   
-      // Return the activities to the frontend
       res.json(activities);
     } catch (err) {
       console.error(err);

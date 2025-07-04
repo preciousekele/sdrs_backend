@@ -113,18 +113,15 @@ router.get(
         const currentMonth = months[months.length - 1];
         const previousMonth = months[months.length - 2];
         
-        const currentMonthTotal = recordsByMonth[currentMonth].total;  // 9 cases for example
-        const previousMonthTotal = recordsByMonth[previousMonth].total;  // 3 cases for example
+        const currentMonthTotal = recordsByMonth[currentMonth].total;  
+        const previousMonthTotal = recordsByMonth[previousMonth].total;  
         
         if (currentMonthTotal > 0) {
-          // Example: ((9-3)/9)*100 = 66.7%
           stats.resolutionRate = (((currentMonthTotal - previousMonthTotal) / currentMonthTotal) * 100).toFixed(1);
         } else {
-          // If current month has 0 cases
           stats.resolutionRate = "0.0";
         }
       } else {
-        // Not enough data for month-over-month comparison
         stats.resolutionRate = "0.0";
       }
 
@@ -175,7 +172,7 @@ router.get(
       if (
         req.user.role !== "admin" &&
         req.user.role !== "user" &&
-        req.user.id !== record.matricNumber.toString() // Convert BigInt to string for comparison
+        req.user.id !== record.matricNumber.toString() 
       ) {
         return res
           .status(403)

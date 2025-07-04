@@ -29,7 +29,7 @@ const verifyToken = async (req, res, next) => {
         // 4. Validate User in Database
         const user = await prisma.user.findUnique({
             where: { id: decoded.id },
-            select: { id: true, email: true, role: true, name: true } // Only necessary fields
+            select: { id: true, email: true, role: true, name: true } 
         });
 
         if (!user) {
@@ -72,7 +72,7 @@ const restrictTo = (...roles) => {
     };
 };
 
-// New: Optional token refresh checker
+// Optional token refresh checker
 const checkTokenRefresh = (req, res, next) => {
     const refreshToken = req.cookies?.refreshToken;
     if (refreshToken) {
