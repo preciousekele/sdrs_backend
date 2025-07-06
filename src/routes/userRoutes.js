@@ -1,4 +1,3 @@
-
 const express = require("express");
 const { getUserStats, updateLastSeen, getAllUsers, getUserActivities, updateUser, deleteUser, updateProfile, deleteUserProfile, changePassword, getProfile } = require("../controllers/userController");
 const { restrictTo, verifyToken,  } = require("../middleware/authMiddleware");

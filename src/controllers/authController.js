@@ -54,7 +54,12 @@ exports.register = async (req, res) => {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    // Email format validation
+    // MCU Email domain validation - only allow @mcu.edu.ng emails
+    if (!email.endsWith('@mcu.edu.ng')) {
+      return res.status(400).json({ error: "Only MCU email addresses (@mcu.edu.ng) are allowed" });
+    }
+
+    // Additional email format validation (basic structure)
     if (!/^\S+@\S+\.\S+$/.test(email)) {
       return res.status(400).json({ error: "Invalid email format" });
     }
@@ -74,8 +79,8 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Generate email confirmation token
-    const emailToken = crypto.randomBytes(32).toString('hex'); // Secure random token
-    const emailTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // Expires in 24 hours
+    const emailToken = crypto.randomBytes(32).toString('hex');
+    const emailTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     // Create new user
     const newUser = await prisma.user.create({
@@ -99,8 +104,6 @@ exports.register = async (req, res) => {
     // Generate the confirmation URL
     const confirmUrl = `https://mcu-sdars.vercel.app/confirm-email?token=${emailToken}`;
 
-    // Log the confirmation URL for debugging
-    
     // Send confirmation email asynchronously
     sendConfirmationEmail(email, name, confirmUrl);
 

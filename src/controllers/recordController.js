@@ -16,7 +16,7 @@ export const createRecord = async (req, res) => {
       punishmentDuration,
       resumptionPeriod,
     } = req.body;
-
+    
     // Validate required fields
     if (
       !studentName ||
